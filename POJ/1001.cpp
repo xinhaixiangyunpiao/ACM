@@ -1,86 +1,103 @@
-// #include <iostream>
-// #include <string>
-// #include <vector>
-// using namespace std;
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
 
-// string InputConvert(string s){
-//     int i = 0,j = s.length()-1;
-//     while(s[i] == '0' && i <= j) 
-//         i++;
-//     while(s[j] == '0' && i <= j)
-//         j--;
-//     string res = "";
-//     for(int k = i; k <= j; k++)
-//         res += s[k];
-//     return res == "" ? "0" : res;
-// }
+string mul(string a, string b) {
+	string res = "";
+	vector <int> v(a.length() + b.length() - 1);
+	for (int i = 0; i < a.length(); i++) {
+		for (int j = 0; j < b.length(); j++) {
+			v[i + j] += (a[i] - '0') * (b[j] - '0');
+		}
+	}
+	int carry = 0;
+	for (int i = a.length() + b.length() - 2; i >= 0; i--) {
+		v[i] += carry;
+		res += v[i] % 10 + '0';
+		carry = v[i] / 10;
+	}
+	if(carry != 0)
+		res += carry + '0';
+	reverse(res.begin(), res.end());
+	return res;
+}
 
-// string STRMUL(string a, string b){
-//     vector<int> A;
-//     vector<int> B;
-//     int PosA = a.length(),PosB = b.length();
-//     for(int i = 0; i < a.length(); i++){
-//         if(a[i] != '.')
-//             A.push_back(a[i]-'0');
-//         else
-//             PosA = i;
-//     }
-//     for(int i = 0; i < b.length(); i++){
-//         if(b[i] != '.')
-//             B.push_back(b[i]-'0');
-//         else
-//             PosB = i;
-//     }
-//     int Len_A = A.size();
-//     int Len_B = B.size();
-//     vector <int> S(Len_A+Len_B-1);
-//     for(int i = 0; i < Len_A; i++){
-//         for(int j = 0; j < Len_B; j++){
-//             S[i+j] += A[i]*B[j];
-//         }
-//     }
-//     int C = 0;
-//     for(int i = Len_A+Len_B-2; i >= 0; i--){
-//         int temp = S[i];
-//         S[i] = (S[i]+C)%10;
-//         C = (temp+C)/10;
-//     }
-//     string jin = to_string(C);
-//     jin = jin == "0" ? "" : jin;
-//     string res = ""; 
-//     int dot = jin.length() + PosA + PosB - 1;
-//     if(dot < 0){
-//         res += ".";
-//         for(int i = 0; i < -1*dot; i++)
-//             res += "0";
-//     }
-//     res += jin;
-//     for(int i = 0; i < Len_A+Len_B-1; i++){
-//         if(i == dot)
-//             res += '.';  
-//         res += S[i] + '0';
-//     }
-//     return res;
-// }
+string removeDot(string s) {
+	string res = "";
+	for(int i = 0; i < s.length(); i++) {
+		if (s[i] != '.')
+			res += s[i];
+	}
+	return res;
+}
 
-// int main(){
-//     string u = "0.0314";
-//     string v = "0.0314";
-//     cout << STRMUL(u,v) << endl;
-//     return 0;
-//     string a;
-//     int n;
-//     while(cin >> a >> n){
-//         string op;
-//         op = InputConvert(a);
-//         string res = "1";
-//         for(int i = 0; i < n; i++){
-//             res = STRMUL(res,op);
-//         }
-//         cout << res << endl;
-//     }
-//     return 0;
-// }
-
-//#include <stdio.h>
-//_=1;main($){for(;_%$?:(_+=$=1);++$*$>_&&printf("%i|",$=_));}
+int main() {
+	string s;
+	int n;
+	string res = "1";
+	while (cin >> s >> n) {
+		res = "1";
+		for (int i = 0; i < n; i++) {
+			res = mul(removeDot(res), removeDot(s));
+		}
+		int m = 0;
+		for (int i = s.length() - 1; i >= 0; i--) {
+			if (s[i] == '.'){
+				m = s.length() - i - 1;
+				break;
+			}
+		}
+		string result = "";
+		for (int i = 0; i < res.length(); i++) {
+			if (i == (res.length() - m*n)) {
+				result += '.';
+			}
+			result += res[i];
+		}
+		// 去掉开头的0
+		string finalResult = "";
+		int FF = 0;
+		for (int i = 0; i < result.length(); i++) {
+			if (result[i] != '0')
+				FF = 1;
+			if (FF)
+				finalResult += result[i];
+		}
+		// 处理xx.xx00的特殊情况
+		int flag = 0;
+		for (int i = 0; i < finalResult.length(); i++) {
+			if (finalResult[i] == '.') {
+				flag = 1;
+			}
+		}
+		string Final = "";
+		int F = 0;
+		if (flag) {
+			for (int i = finalResult.length() - 1; i >= 0; i--) {
+				if (finalResult[i] != '0')
+					F = 1;
+				if (F)
+					Final += finalResult[i];
+			}
+		}
+		else {
+			Final = finalResult;
+		}
+		reverse(Final.begin(), Final.end());
+		//去掉最后的小数点
+		string last = Final;
+		if (Final.length() <= 1) {
+			//如果啥都没有，输出0
+			if (last == "")
+				last = "0";
+		}
+		else {
+			if (Final[Final.length() - 1] == '.')
+				last = Final.substr(0, Final.length() - 1);
+		}
+		cout << last << endl;
+	}
+	return 0;
+}
